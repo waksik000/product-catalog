@@ -1,0 +1,50 @@
+name: Sync to classroom repo
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Checkout classroom repository
+        uses: actions/checkout@v4
+        with:
+          repository: it-ptitsa-mentor/it-ptitsa-mentor-classroom-product-catalog-Product-Catalog
+          token: ${{ secrets.CLASSROOM_PAT }}
+          path: classroom
+          fetch-depth: 0
+
+      - name: Prepare classroom branch
+        working-directory: classroom
+        run: |
+          git fetch origin dev || true
+          if git show-ref --verify --quiet refs/remotes/origin/dev; then
+            git checkout -B dev origin/dev
+          else
+            git checkout -B dev
+          fi
+
+      - name: Copy files to classroom repo
+        run: |
+          rsync -a --delete --exclude='.git' --exclude='.github' ./ classroom/
+
+      - name: Commit and push changes to classroom repo
+        working-directory: classroom
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --staged --quiet; then
+            echo "No changes to sync"
+          else
+            git commit -m "Sync from template repository: ${{ github.sha }}"
+            git push origin dev
+          fi
