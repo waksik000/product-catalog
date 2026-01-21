@@ -37,4 +37,3 @@ const hasProduct = (catalog, productId) => {
         return true 
     } else return false
 }
-
