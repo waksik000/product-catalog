@@ -1,5 +1,3 @@
-
-
 const getProduct = (catalog, productId) => {
     if (catalog.hasOwnProperty(productId)){
         return {...catalog[productId] }
@@ -39,4 +37,3 @@ const catalog = {
 };
 
 console.log(filterByCategory(catalog, 'Electronics'));
-
